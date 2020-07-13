@@ -1,0 +1,4 @@
+anypoint:
+  client_id: "PUT ORGANIZATION CLIENT ID HERE"
+  client_secret: "PUT ORGANIZATION CLIENT SECRET HERE"
+  organizationId: "PUT ORGANIZATION ID HERE"

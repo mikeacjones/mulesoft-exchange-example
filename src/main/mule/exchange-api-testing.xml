@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns:oauth="http://www.mulesoft.org/schema/mule/oauth"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/oauth http://www.mulesoft.org/schema/mule/oauth/current/mule-oauth.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
+	<os:config name="ObjectStore_Config" doc:name="ObjectStore Config" doc:id="0025238b-7d1c-49a7-b9b3-0859fc2fdd9b" >
+		<os:connection />
+	</os:config>
+	<os:object-store name="Object_store" doc:name="Object store" doc:id="26f63f74-c207-4c99-ba3f-0976d1ea4aca" config-ref="ObjectStore_Config" />
+	<global-property doc:name="Global Property" doc:id="a2a50b52-fbd3-4b86-a007-c6f46025af0a" name="env" value="dev" />
+	<configuration-properties doc:name="Configuration properties" doc:id="9db7f97d-2ab1-43ae-8163-936eeaaaa9f6" file="config.${env}.yaml" />
+	<oauth:token-manager-config name="Token_manager_config" doc:name="Token manager config" doc:id="fb586d05-5764-446f-ba3a-0cbcf0586dad" objectStore="Object_store" />
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="2a1aff76-293b-4256-b8b2-404b18933c4d" basePath="/exchange/api/v1/" >
+		<http:request-connection host="anypoint.mulesoft.com" port="443" protocol="HTTPS">
+			<http:authentication >
+				<oauth:client-credentials-grant-type clientId="${anypoint.client_id}" clientSecret="${anypoint.client_secret}" tokenUrl="https://anypoint.mulesoft.com/accounts/oauth2/token" tokenManager="Token_manager_config" responseRefreshToken="#[null]" responseExpiresIn="#[null]"/>
+			</http:authentication>
+		</http:request-connection>
+	</http:request-config>
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="dce437af-eed3-40d5-90a2-d391d85878eb" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<flow name="exchange-api-testingFlow" doc:id="9841c4d2-ff11-42ec-b69d-75cab2d492f1" >
+		<http:listener doc:name="Listener" doc:id="7af3cfbd-f871-4e53-ba73-46f2f574ce36" config-ref="HTTP_Listener_config" path="/assets"/>
+		<http:request method="GET" doc:name="Request" doc:id="0d4bddca-4cd3-449f-941f-cf1365f1e29d" config-ref="HTTP_Request_configuration" path="assets">
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	"organizationId" : p('anypoint.organizationId')
+}]]]></http:query-params>
+		</http:request>
+		<logger level="INFO" doc:name="Logger" doc:id="c269f819-cb7c-4b87-842c-c2ac6703e4b3" />
+	</flow>
+</mule>
